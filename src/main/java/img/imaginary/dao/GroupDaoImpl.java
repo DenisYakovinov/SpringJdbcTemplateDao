@@ -6,12 +6,14 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import img.imaginary.dao.mapper.GroupResultSetExtractor;
 import img.imaginary.dao.mapper.StudentMapper;
@@ -54,10 +56,13 @@ public class GroupDaoImpl implements GroupDao {
                 "SELECT * FROM groups AS g LEFT JOIN students AS s ON g.group_id = s.group_id WHERE g.group_id = ?"
                         + " ORDER BY g.group_id",
                 new GroupResultSetExtractor(), id);
-        if (groups.size() != 1) {
+        if (CollectionUtils.isEmpty(groups)) {
             throw new EmptyResultDataAccessException(1);
         }
-        return groups.get(0);
+        if (groups.size() > 1) {
+            throw new IncorrectResultSizeDataAccessException(1, groups.size());
+        }
+        return groups.iterator().next();
     }
 
     @Override
