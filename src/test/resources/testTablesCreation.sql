@@ -48,8 +48,8 @@ CREATE TABLE subjects (
 
 DROP TABLE IF EXISTS timetable_line CASCADE;
 
-CREATE TABLE timetable_lines (
-    timetable_line_id SERIAL NOT NULL PRIMARY KEY,
+CREATE TABLE timetable_classes (
+    timetable_class_id SERIAL NOT NULL PRIMARY KEY,
     day_of_week SMALLINT CHECK (day_of_week BETWEEN 1 AND 7),
     class_number SMALLINT,
     subject_id INTEGER REFERENCES subjects,

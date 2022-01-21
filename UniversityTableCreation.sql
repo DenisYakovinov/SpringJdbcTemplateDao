@@ -2,7 +2,7 @@ CREATE TABLE teachers (
     teacher_id SERIAL NOT NULL PRIMARY KEY,
     first_name varchar(50),
     last_name varchar(50),
-    acadeic_degree varchar(20),
+    academic_degree varchar(20),
     email varchar(50)
 );
 
