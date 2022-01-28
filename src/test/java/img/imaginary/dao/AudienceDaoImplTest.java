@@ -1,4 +1,4 @@
-package img.imaginary;
+package img.imaginary.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +14,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import img.imaginary.config.TestDataSourceConfig;
-import img.imaginary.dao.AudienceDao;
 import img.imaginary.service.entity.Audience;
 
 

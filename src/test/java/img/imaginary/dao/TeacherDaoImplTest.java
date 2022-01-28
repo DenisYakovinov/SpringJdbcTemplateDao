@@ -1,4 +1,4 @@
-package img.imaginary;
+package img.imaginary.dao;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +13,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import img.imaginary.config.TestDataSourceConfig;
-import img.imaginary.dao.TeacherDao;
 import img.imaginary.service.entity.Teacher;
 
 @ExtendWith(SpringExtension.class)

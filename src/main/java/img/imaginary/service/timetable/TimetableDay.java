@@ -3,17 +3,27 @@ package img.imaginary.service.timetable;
 import java.time.LocalDate;
 import java.util.List;
 
-import lombok.Data;
+import img.imaginary.service.entity.TimetableClass;
+import img.imaginary.service.timetable.TimetableDay;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data
+@AllArgsConstructor
+@Setter
+@Getter
+@EqualsAndHashCode
+@ToString
 public class TimetableDay {
 
     @NonNull
     private LocalDate day;
     
-    @NonNull
-    private List<TimetableClass> classes;
+    @Setter
+    private List<TimetableClass> classes;           
 
     public void addClass(TimetableClass timetableClass) {
         classes.add(timetableClass);

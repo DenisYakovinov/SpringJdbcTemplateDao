@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -127,8 +128,23 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         pc.setUpdatableResults(false);
         return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, teacherId),
                 new TimetableResultSetEtractor());
-    }    
+    }   
     
+    public boolean isAdienceBusy(DayOfWeek day, int classNumber, int audienceId) {
+        String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND audience_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, audienceId) > 0;
+    }
+    
+    public boolean isTeacherBusy(DayOfWeek day, int classNumber, int teacherId) {
+        String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND teacher_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, teacherId) > 0;
+    }
+    
+    public boolean isGroupBusy(DayOfWeek day, int classNumber, int groupId) {
+        String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND group_id = ?";
+        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, groupId) > 0;
+    }
+
     private SqlParameterSource fillNamedParameters(TimetableClass timetableClass) {
         return new MapSqlParameterSource("timetableClassId", timetableClass.getTimetableId())
                 .addValue("dayOfWeek", timetableClass.getDayOfWeek().getValue())
@@ -140,10 +156,7 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
     }
 
     private String buildRangeToQuery(Set<DayOfWeek> days) {
-        StringBuilder builder = new StringBuilder(" (");
-        days.forEach(day -> builder.append(day.getValue()).append(", "));
-        builder.setLength(builder.length() - 2);
-        builder.append(") ");
-        return builder.toString();
+        return days.stream().mapToInt(DayOfWeek::getValue).mapToObj(String::valueOf)
+                .collect(Collectors.joining(", ", "(", ")"));
     }
 }

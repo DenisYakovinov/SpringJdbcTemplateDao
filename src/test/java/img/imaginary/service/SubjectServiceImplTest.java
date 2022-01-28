@@ -1,39 +1,43 @@
-package img.imaginary;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package img.imaginary.service;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
-
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import img.imaginary.config.TestDataSourceConfig;
+
+import img.imaginary.config.TestServiceConfig;
 import img.imaginary.dao.SubjectDao;
 import img.imaginary.service.entity.Subject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
-@Sql(scripts = "/insertTestSubjects.sql")
-class SubjectDaoImplTest {
+@ContextConfiguration(classes = TestServiceConfig.class)
+class SubjectServiceImplTest {
 
     @Autowired
-    SubjectDao subjectDaoImpl;
-
+    SubjectService subjectServiceImpl;
+    
+    @Autowired
+    SubjectDao subjectDao;
+    
     @Test
     void findAll_ShouldReturnAllSubjects() {
         List<Subject> expected = Arrays.asList(new Subject(1, "math", "base course"),
                 new Subject(2, "history", "base course"), new Subject(3, "economy", "base course"));
-        assertEquals(expected, subjectDaoImpl.findAll());
+        Mockito.when(subjectDao.findAll()).thenReturn(expected);
+        assertEquals(expected, subjectServiceImpl.findAll());
     }
-
+    
     @Test
     void findById_ShouldReturnSubjectWithSpecifiedID_WhenSubjectId() {
         Subject expected = new Subject(1, "math", "base course");
-        assertEquals(expected, subjectDaoImpl.findById(1));
+        Mockito.when(subjectDao.findById(1)).thenReturn(expected);
+        assertEquals(expected, subjectServiceImpl.findById(1));
     }
 }
