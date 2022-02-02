@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,13 +20,15 @@ public class SubjectDaoImpl implements SubjectDao {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private JdbcTemplate jdbcTemplate;
     private KeyHolder keyHolder;
-
+    private RowMapper<Subject> subjectMapper;
+    
     @Autowired
     public SubjectDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, JdbcTemplate jdbcTemplate,
-            KeyHolder keyHolder) {
+            KeyHolder keyHolder, RowMapper<Subject> subjectMapper) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.jdbcTemplate = jdbcTemplate;
         this.keyHolder = keyHolder;
+        this.subjectMapper = subjectMapper;
     }
     
     @Override
@@ -39,13 +41,12 @@ public class SubjectDaoImpl implements SubjectDao {
 
     @Override
     public List<Subject> findAll() {
-        return jdbcTemplate.query("SELECT * FROM subjects", new BeanPropertyRowMapper<>(Subject.class));
+        return jdbcTemplate.query("SELECT * FROM subjects", subjectMapper);
     }
 
     @Override
     public Subject findById(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM subjects WHERE subject_id = ?",
-                new BeanPropertyRowMapper<>(Subject.class), id);
+        return jdbcTemplate.queryForObject("SELECT * FROM subjects WHERE subject_id = ?", subjectMapper, id);
     }
     
     @Override

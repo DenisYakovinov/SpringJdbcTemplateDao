@@ -3,15 +3,11 @@ package img.imaginary.config;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @PropertySource("datasource.properties")
-@ComponentScan(basePackages = "img.imaginary.dao")
-@Import(BaseDaoConfig.class)
 public class DataSourceConfig {
     
     @Value ("${db.class}")

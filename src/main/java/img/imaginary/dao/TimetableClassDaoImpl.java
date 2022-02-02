@@ -9,10 +9,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,7 +22,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import img.imaginary.dao.mapper.TimetableResultSetEtractor;
 import img.imaginary.service.entity.TimetableClass;
 
 @Repository
@@ -38,13 +39,16 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private JdbcTemplate jdbcTemplate;
     private KeyHolder keyHolder;
+    private ResultSetExtractor<List<TimetableClass>> timetableExtractor;
     
     @Autowired
     public TimetableClassDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, JdbcTemplate jdbcTemplate,
-            KeyHolder keyHolder) {
+            KeyHolder keyHolder,
+            @Qualifier("timetableResultSetExtractor") ResultSetExtractor<List<TimetableClass>> timetableExtractor) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.jdbcTemplate = jdbcTemplate;
         this.keyHolder = keyHolder;
+        this.timetableExtractor = timetableExtractor;
     }
     
     @Override
@@ -65,8 +69,7 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         PreparedStatementCreatorFactory pc = new PreparedStatementCreatorFactory(query);
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
-        return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()),
-                new TimetableResultSetEtractor());
+        return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), timetableExtractor);
     }
 
     @Override
@@ -76,7 +79,7 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
         List<TimetableClass> timetableClasses = jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()),
-                ps -> ps.setInt(1, id), new TimetableResultSetEtractor());
+                ps -> ps.setInt(1, id), timetableExtractor);
         if (CollectionUtils.isEmpty(timetableClasses)) {
             throw new EmptyResultDataAccessException(1);
         }
@@ -116,7 +119,7 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
         return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, groupId),
-                new TimetableResultSetEtractor());
+                timetableExtractor);
     }
 
     @Override
@@ -127,7 +130,7 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
         return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, teacherId),
-                new TimetableResultSetEtractor());
+                timetableExtractor);
     }   
     
     public boolean isAdienceBusy(DayOfWeek day, int classNumber, int audienceId) {

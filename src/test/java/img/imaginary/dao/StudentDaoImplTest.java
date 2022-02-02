@@ -14,12 +14,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import img.imaginary.config.TestDataSourceConfig;
+import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Student;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
-@Sql(scripts = "/InsertTestStudents.sql")
+@ContextConfiguration(classes = TestDaoConfig.class)
+@Sql(scripts = {"/insertTestGroups.sql", "/InsertTestStudents.sql"})
 class StudentDaoImplTest {
 
     @Autowired

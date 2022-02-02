@@ -12,11 +12,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import img.imaginary.config.TestDataSourceConfig;
+
+import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Subject;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
+@ContextConfiguration(classes = TestDaoConfig.class)
 @Sql(scripts = "/insertTestSubjects.sql")
 class SubjectDaoImplTest {
 

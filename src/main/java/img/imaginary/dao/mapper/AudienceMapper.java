@@ -4,9 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
 import img.imaginary.service.entity.Audience;
 
+@Component
 public class AudienceMapper implements RowMapper<Audience> {
 
     @Override

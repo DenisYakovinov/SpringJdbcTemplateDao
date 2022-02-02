@@ -1,6 +1,7 @@
 package img.imaginary.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import img.imaginary.config.TestDataSourceConfig;
+import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Audience;
 import img.imaginary.service.entity.Group;
 import img.imaginary.service.entity.Student;
@@ -27,7 +28,7 @@ import img.imaginary.service.entity.Teacher;
 import img.imaginary.service.entity.TimetableClass;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
+@ContextConfiguration(classes = TestDaoConfig.class)
 @Sql(scripts = { "/insertTestSubjects.sql", "/insertTestAudiences.sql", "/insertTestTeachers.sql",
         "/insertTestGroups.sql", "/insertTestStudents.sql", "/insertTestTimetableClasses.sql" })
 class TimetableClassDaoImplTest {
@@ -93,5 +94,20 @@ class TimetableClassDaoImplTest {
         List<TimetableClass> expected = Arrays.asList(classes.get(0), classes.get(2));
         assertEquals(expected, timetableLineDaoImpl.getTeacherTimetable(1,
                 new HashSet<>(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))));
+    }
+    
+    @Test 
+    void isAdienceBusy_ShouldReturnTrueIfAudienceIsBusy_WhenDayAndClassNumberAndAudienceId() {
+        assertTrue(timetableLineDaoImpl.isAdienceBusy(DayOfWeek.MONDAY, 1, 1));
+    }
+    
+    @Test 
+    void isTeacherBusy_ShouldReturnTrueIfTeacherIsBusy_WhenDayAndClassNumberAndAudienceId() {
+        assertTrue(timetableLineDaoImpl.isTeacherBusy(DayOfWeek.MONDAY, 2, 3));
+    }
+    
+    @Test 
+    void isGroupBusy_ShouldReturnTrueIfGroupIsBusy_WhenDayAndClassNumberAndGroupId() {
+        assertTrue(timetableLineDaoImpl.isGroupBusy(DayOfWeek.WEDNESDAY, 1, 2));
     }
 }

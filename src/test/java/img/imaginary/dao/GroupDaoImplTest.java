@@ -17,13 +17,13 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.context.jdbc.SqlMergeMode.MergeMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import img.imaginary.config.TestDataSourceConfig;
+import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Group;
 import img.imaginary.service.entity.Student;
 
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
+@ContextConfiguration(classes = TestDaoConfig.class)
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "/insertTestGroups.sql")
 class GroupDaoImplTest {
 
@@ -41,8 +41,8 @@ class GroupDaoImplTest {
     void findAll_ShouldReturnAllGroups() {
         Group group = new Group(1, "xx-zz", null, "math sciences");
         group.setStudents(students);
-        List<Group> expected = Arrays.asList(group, new Group(2, "zz-cc", new ArrayList<Student>(), "sport"),
-                new Group(3, "cc-vv", new ArrayList<Student>(), "humanitarian sciences"));
+        List<Group> expected = Arrays.asList(group, new Group(2, "zz-cc", new ArrayList<>(), "sport"),
+                new Group(3, "cc-vv", new ArrayList<>(), "humanitarian sciences"));
 
         assertEquals(expected, groupDaoImpl.findAll());
     }

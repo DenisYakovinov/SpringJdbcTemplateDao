@@ -13,12 +13,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import img.imaginary.config.TestDataSourceConfig;
+import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Audience;
 
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestDataSourceConfig.class)
+@ContextConfiguration(classes = TestDaoConfig.class)
 @Sql(scripts = "/insertTestAudiences.sql")
 class AudienceDaoImplTest {
 

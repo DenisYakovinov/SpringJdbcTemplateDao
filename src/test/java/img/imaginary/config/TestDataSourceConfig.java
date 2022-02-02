@@ -3,9 +3,8 @@ package img.imaginary.config;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -15,8 +14,6 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 @Configuration
 @PropertySource("daoH2.properties")
-@ComponentScan(basePackages = "img.imaginary.dao")
-@Import(BaseDaoConfig.class)
 public class TestDataSourceConfig {
 
     @Value("${db.class}")
@@ -32,6 +29,7 @@ public class TestDataSourceConfig {
     private String password;
 
     @Bean(destroyMethod = "close")
+    @Primary
     public BasicDataSource basicDataSource() {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName(className);

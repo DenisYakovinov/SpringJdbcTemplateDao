@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,13 +20,15 @@ public class TeacherDaoImpl implements TeacherDao {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private JdbcTemplate jdbcTemplate;
     private KeyHolder keyHolder;
+    private RowMapper<Teacher> teacherMapper;
 
     @Autowired
     public TeacherDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, JdbcTemplate jdbcTemplate,
-            KeyHolder keyHolder) {
+            KeyHolder keyHolder, RowMapper<Teacher> teacherMapper) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.jdbcTemplate = jdbcTemplate;
         this.keyHolder = keyHolder;
+        this.teacherMapper = teacherMapper;
     }
 
     @Override
@@ -41,13 +43,12 @@ public class TeacherDaoImpl implements TeacherDao {
 
     @Override
     public List<Teacher> findAll() {
-        return jdbcTemplate.query("SELECT * FROM teachers", new BeanPropertyRowMapper<>(Teacher.class));
+        return jdbcTemplate.query("SELECT * FROM teachers", teacherMapper);
     }
 
     @Override
     public Teacher findById(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM teachers WHERE teacher_id = ?",
-                new BeanPropertyRowMapper<>(Teacher.class), id);
+        return jdbcTemplate.queryForObject("SELECT * FROM teachers WHERE teacher_id = ?", teacherMapper, id);
     }
 
     @Override

@@ -6,13 +6,13 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import img.imaginary.dao.mapper.AudienceMapper;
 import img.imaginary.service.entity.Audience;
 
 
@@ -22,13 +22,15 @@ public class AudienceDaoImpl implements AudienceDao {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private JdbcTemplate jdbcTemplate;
     private KeyHolder keyHolder;
+    private RowMapper<Audience> audienceMapper;
 
     @Autowired
     public AudienceDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, JdbcTemplate jdbcTemplate,
-            KeyHolder keyHolder) {
+            KeyHolder keyHolder,RowMapper<Audience> audienceMapper) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.jdbcTemplate = jdbcTemplate;
         this.keyHolder = keyHolder;
+        this.audienceMapper = audienceMapper;
     }
 
     @Override
@@ -43,12 +45,12 @@ public class AudienceDaoImpl implements AudienceDao {
 
     @Override
     public List<Audience> findAll() {
-        return jdbcTemplate.query("SELECT * FROM audiences", new AudienceMapper());
+        return jdbcTemplate.query("SELECT * FROM audiences", audienceMapper);
     }
 
     @Override
     public Audience findById(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM audiences WHERE audience_id = ?", new AudienceMapper(), id);
+        return jdbcTemplate.queryForObject("SELECT * FROM audiences WHERE audience_id = ?", audienceMapper, id);
     }
 
     @Override

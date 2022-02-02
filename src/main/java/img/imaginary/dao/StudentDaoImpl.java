@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import img.imaginary.dao.mapper.StudentMapper;
 import img.imaginary.service.entity.Student;
 
 @Repository
@@ -21,13 +22,15 @@ public class StudentDaoImpl implements StudentDao {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private JdbcTemplate jdbcTemplate;
     private KeyHolder keyHolder;
+    private RowMapper<Student> studentMapper;
     
     @Autowired
     public StudentDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, JdbcTemplate jdbcTemplate,
-            KeyHolder keyHolder) {
+            KeyHolder keyHolder, @Qualifier("studentMapper") RowMapper<Student> studentMapper) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.jdbcTemplate = jdbcTemplate;
         this.keyHolder = keyHolder;
+        this.studentMapper = studentMapper;
     }
     
     @Override
@@ -42,19 +45,21 @@ public class StudentDaoImpl implements StudentDao {
 
     @Override
     public List<Student> findAll() {
-        return jdbcTemplate.query("SELECT * FROM students", new StudentMapper());
+        return jdbcTemplate.query("SELECT * FROM students", studentMapper);
     }
 
     @Override
     public Student findById(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM students WHERE student_id = ?", new StudentMapper(), id);
+        return jdbcTemplate.queryForObject("SELECT * FROM students WHERE student_id = ?", studentMapper, id);
     }
 
     @Override
     public void update(Student student) {
         SqlParameterSource namedParameters = fillNamedParameters(student);
-        namedParameterJdbcTemplate.update("UPDATE students SET (first_name, last_name, year_number, admission, email) ="
-                + " (:first_name, :last_name, :year, :admission, :email) WHERE student_id = :id", namedParameters);
+        namedParameterJdbcTemplate.update(
+                "UPDATE students SET (first_name, last_name, year_number, admission, email) ="
+                        + " (:first_name, :last_name, :year, :admission, :email) WHERE student_id = :id",
+                namedParameters);
     }
 
     @Override
