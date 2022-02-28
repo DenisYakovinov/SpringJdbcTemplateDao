@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import img.imaginary.aspect.Loggable;
 import img.imaginary.dao.GroupDao;
 import img.imaginary.exception.ServiceException;
 import img.imaginary.service.entity.Group;
 import img.imaginary.service.entity.Student;
 
+@Loggable
 @Service
 public class GroupServiceImpl implements GroupService {
 

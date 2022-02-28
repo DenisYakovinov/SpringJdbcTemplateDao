@@ -42,4 +42,10 @@ public class TestDataSourceConfig {
         DatabasePopulatorUtils.execute(databasePopulator, dataSource);
         return dataSource;
     }
+    
+    @Bean(destroyMethod = "close")
+    public BasicDataSource noConnectionDataSource() {
+        BasicDataSource dataSource = new BasicDataSource();
+        return dataSource;
+    }
 }

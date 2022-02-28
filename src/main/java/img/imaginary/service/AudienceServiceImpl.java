@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import img.imaginary.aspect.Loggable;
 import img.imaginary.dao.AudienceDao;
 import img.imaginary.exception.ServiceException;
 import img.imaginary.service.entity.Audience;
 
+@Loggable
 @Service
 public class AudienceServiceImpl implements AudienceService {
 

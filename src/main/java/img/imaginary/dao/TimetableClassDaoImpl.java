@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,10 +23,18 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
+import img.imaginary.aspect.Loggable;
+import img.imaginary.aspect.NonLoggableParameter;
+import img.imaginary.exception.DaoException;
 import img.imaginary.service.entity.TimetableClass;
 
+@Loggable
 @Repository
 public class TimetableClassDaoImpl implements TimetableClassDao {
+        
+    private static final String NOT_FOUND_TIMETABLE_CLASS = "The timetableClass with id = %d wasn't found";
+    private static final String NOT_FOUND_TIMETABLE = "timetable wasn't found (group hasn't found or the timetable is"
+            + " not exist in specified days)";
     
     private static final String BASE_QUERY = String.join(System.lineSeparator(),
             "SELECT * FROM timetable_classes AS tl",
@@ -59,8 +68,15 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
                        "subject_id, group_id, audience_id, teacher_id) ",
                        "VALUES (:dayOfWeek, :classNumber, :subjectId, ",
                        ":groupId, :audienceId, :teacherId)");
-        namedParameterJdbcTemplate.update(query, namedParameters, keyHolder, new String[] { "timetable_class_id" });
-        return Optional.ofNullable(keyHolder.getKey()).map(Number::intValue); 
+        try {
+            namedParameterJdbcTemplate.update(query, namedParameters, keyHolder, 
+                    new String[] { "timetable_class_id" });
+        } catch (DataAccessException e) {
+            throw new DaoException(
+                    String.format("timetableClass %s can't be added (%s)", timetableClass.toString(), e.getMessage()),
+                    e);
+        }
+        return Optional.ofNullable(keyHolder.getKey()).map(Number::intValue);
     }
 
     @Override
@@ -69,7 +85,11 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         PreparedStatementCreatorFactory pc = new PreparedStatementCreatorFactory(query);
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
-        return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), timetableExtractor);
+        try {
+            return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), timetableExtractor);
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Can't get timetableClasses (%s)", e.getMessage()), e);
+        }
     }
 
     @Override
@@ -78,13 +98,20 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
         PreparedStatementCreatorFactory pc = new PreparedStatementCreatorFactory(query);
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
-        List<TimetableClass> timetableClasses = jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()),
-                ps -> ps.setInt(1, id), timetableExtractor);
+        List<TimetableClass> timetableClasses;
+        try {
+            timetableClasses = jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()),
+                    ps -> ps.setInt(1, id), timetableExtractor);
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Can't find timetableClass with id = %d (%s)", id, e.getMessage()));
+        }
         if (CollectionUtils.isEmpty(timetableClasses)) {
-            throw new EmptyResultDataAccessException(1);
+            throw new DaoException(String.format(NOT_FOUND_TIMETABLE_CLASS, id),
+                    new EmptyResultDataAccessException(1));
         }
         if (timetableClasses.size() > 1) {
-            throw new IncorrectResultSizeDataAccessException(1, timetableClasses.size());
+            throw new DaoException("Incorrect number of timetableClasses",
+                    new IncorrectResultSizeDataAccessException(1, timetableClasses.size()));
         }
         return timetableClasses.iterator().next();
     }
@@ -98,12 +125,30 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
                        "(:dayOfWeek, :classNumber, :subjectId, ",
                        ":groupId, :audienceId, :teacherId)",
                        "WHERE timetable_class_id = :timetableClassId");
-        namedParameterJdbcTemplate.update(query, namedParameters);
+        int id = timetableClass.getTimetableId();
+        try {
+            int updatedRowsNumber = namedParameterJdbcTemplate.update(query, namedParameters);
+            if (updatedRowsNumber == 0) {
+                throw new DaoException(String.format(NOT_FOUND_TIMETABLE_CLASS, id));
+            }
+        } catch (DataAccessException e) {
+            throw new DaoException(
+                    String.format("Can't update timetableClass with id = %d (%s)", id, e.getMessage()), e);
+        }
     }
 
     @Override
     public void delete(int id) {
-        jdbcTemplate.update("DELETE FROM timetable_classes WHERE timetable_class_id = ?", id);
+        try {
+            int updatedRowsNumber = jdbcTemplate.update("DELETE FROM timetable_classes WHERE timetable_class_id = ?",
+                    id);
+            if (updatedRowsNumber == 0) {
+                throw new DaoException(String.format(NOT_FOUND_TIMETABLE_CLASS, id));
+            }
+        } catch (DataAccessException e) {
+            throw new DaoException(
+                    String.format("Can't delete timetableClass with id = %d (%s)", id, e.getMessage()), e);
+        }
     }
 
     @Override
@@ -112,40 +157,70 @@ public class TimetableClassDaoImpl implements TimetableClassDao {
     }
 
     @Override
-    public List<TimetableClass> getStudentTimetable(int groupId, Set<DayOfWeek> days) {
+    public List<TimetableClass> getStudentTimetable(@NonLoggableParameter int groupId, Set<DayOfWeek> days) {
         String query = String.join(System.lineSeparator(), BASE_QUERY, " WHERE day_of_week IN", buildRangeToQuery(days),
                 "AND gr.group_id = ?", ORDER_BY);
         PreparedStatementCreatorFactory pc = new PreparedStatementCreatorFactory(query);
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
-        return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, groupId),
-                timetableExtractor);
+        List<TimetableClass> classes;
+        try {
+            classes = jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, groupId),
+                    timetableExtractor);
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Can't get studentTimetable (%s)", e.getMessage()), e);
+        }
+        if (CollectionUtils.isEmpty(classes)) {
+            throw new DaoException(String.format("Student %s ", NOT_FOUND_TIMETABLE));               
+        }
+        return classes;
     }
 
     @Override
-    public List<TimetableClass> getTeacherTimetable(int teacherId, Set<DayOfWeek> days) {        
+    public List<TimetableClass> getTeacherTimetable(int teacherId, Set<DayOfWeek> days) {
         String query = String.join(System.lineSeparator(), BASE_QUERY, " WHERE day_of_week IN", buildRangeToQuery(days),
                 "AND tc.teacher_id = ?", ORDER_BY);
         PreparedStatementCreatorFactory pc = new PreparedStatementCreatorFactory(query);
         pc.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         pc.setUpdatableResults(false);
-        return jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()), ps -> ps.setInt(1, teacherId),
-                timetableExtractor);
-    }   
+        List<TimetableClass> classes;
+        try {
+            classes = jdbcTemplate.query(pc.newPreparedStatementCreator(new ArrayList<>()),
+                    ps -> ps.setInt(1, teacherId), timetableExtractor);
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Can't get teacherTimetable (%s)", e.getMessage()), e);
+        }
+        if (CollectionUtils.isEmpty(classes)) {
+            throw new DaoException(String.format("Teacher %s ", NOT_FOUND_TIMETABLE));
+        }
+        return classes;
+    }
     
     public boolean isAdienceBusy(DayOfWeek day, int classNumber, int audienceId) {
         String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND audience_id = ?";
-        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, audienceId) > 0;
+        try {
+            return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, audienceId) > 0;
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Сan't check if audience is busy (%s)", e.getMessage()), e);
+        }
     }
     
     public boolean isTeacherBusy(DayOfWeek day, int classNumber, int teacherId) {
         String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND teacher_id = ?";
-        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, teacherId) > 0;
+        try {
+            return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, teacherId) > 0;
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Сan't check if teacher is busy (%s)", e.getMessage()), e);
+        }
     }
-    
+
     public boolean isGroupBusy(DayOfWeek day, int classNumber, int groupId) {
         String query = "SELECT count(*) FROM timetable_classes WHERE day_of_week = ? AND class_number = ? AND group_id = ?";
-        return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, groupId) > 0;
+        try {
+            return jdbcTemplate.queryForObject(query, Integer.class, day.getValue(), classNumber, groupId) > 0;
+        } catch (DataAccessException e) {
+            throw new DaoException(String.format("Can't check if group is busy (%s)", e.getMessage()), e);
+        }
     }
 
     private SqlParameterSource fillNamedParameters(TimetableClass timetableClass) {

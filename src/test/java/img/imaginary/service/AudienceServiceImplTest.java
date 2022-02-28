@@ -12,10 +12,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import img.imaginary.config.TestServiceConfig;
+import img.imaginary.exception.ServiceException;
+import img.imaginary.exception.DaoException;
 import img.imaginary.dao.AudienceDao;
 import img.imaginary.service.entity.Audience;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestServiceConfig.class)
@@ -44,5 +47,11 @@ class AudienceServiceImplTest {
         Audience expected = audiences.get(0);
         Mockito.when(audienceDao.findById(1)).thenReturn(expected);
         assertEquals(expected, audienceServiceImpl.findById(1));
+    }
+    
+    @Test
+    void findById_ShouldThrowServiceException_WhenAudienceNotFound() {
+        Mockito.when(audienceDao.findById(0)).thenThrow(DaoException.class);        
+        assertThrows(ServiceException.class, () -> audienceServiceImpl.findById(0));
     }
 }

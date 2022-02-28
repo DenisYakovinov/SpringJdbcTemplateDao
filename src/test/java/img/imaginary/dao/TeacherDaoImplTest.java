@@ -4,14 +4,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import img.imaginary.dao.mapper.TeacherMapper;
+import img.imaginary.exception.DaoException;
 import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Teacher;
 
@@ -22,6 +31,10 @@ class TeacherDaoImplTest {
 
     @Autowired
     TeacherDao teacherDaoImpl;
+    
+    @Autowired
+    @Qualifier("noConnectionDataSource")
+    BasicDataSource noConnectionDataSource;
 
     @Test
     void findAll_ShouldReturnAllTeachers() {
@@ -35,5 +48,24 @@ class TeacherDaoImplTest {
     void findById_ShouldReturnTeacherWithSpecifiedId_WhenTeacherId() {
         Teacher expected = new Teacher(1, "jonh", "Doe", "Professional degree", "jonh@doe.com");
         assertEquals(expected, teacherDaoImpl.findById(1));
+    }
+    
+    @Test
+    void findById_ShouldThrowDaoException_WhenTeacherNotFound() {
+        assertThrows(DaoException.class, () -> teacherDaoImpl.findById(0));
+    }
+    
+    @Test
+    void findAll_ShouldThrowDaoException_WhenNotCorrectConnection() {
+        TeacherDao teacherDaoImpl = new TeacherDaoImpl(new NamedParameterJdbcTemplate(noConnectionDataSource),
+                new JdbcTemplate(noConnectionDataSource), new GeneratedKeyHolder(), new TeacherMapper());
+        assertThrows(DaoException.class, () -> teacherDaoImpl.findAll());
+    }
+    
+    @DirtiesContext
+    @Sql("/dropAllobjects.sql")
+    @Test
+    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
+        assertThrows(DaoException.class, () -> teacherDaoImpl.findAll());
     }
 }

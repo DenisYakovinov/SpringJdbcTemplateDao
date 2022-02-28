@@ -11,6 +11,8 @@
 		<Spring.version>5.3.13</Spring.version>
 		<Postgres.version>42.3.1</Postgres.version>
 		<h2.version>1.4.200</h2.version>
+		<Logback.version>1.3.0-alpha13</Logback.version>
+		<AspectJ.version>1.9.8</AspectJ.version>
 		<Compiler.version>1.8</Compiler.version>
 	</properties>
 
@@ -78,6 +80,30 @@
 			<artifactId>mockito-core</artifactId>
 			<version>${Mockito.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${Logback.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${Spring.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${AspectJ.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${AspectJ.version}</version>
 		</dependency>
 	</dependencies>
 

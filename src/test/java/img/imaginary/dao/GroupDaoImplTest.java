@@ -1,6 +1,7 @@
 package img.imaginary.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -8,15 +9,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.context.jdbc.SqlMergeMode.MergeMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import img.imaginary.dao.mapper.GroupResultSetExtractor;
+import img.imaginary.dao.mapper.StudentMapper;
+import img.imaginary.exception.DaoException;
 import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Group;
 import img.imaginary.service.entity.Student;
@@ -29,13 +39,17 @@ class GroupDaoImplTest {
 
     @Autowired
     GroupDao groupDaoImpl;
+    
+    @Autowired
+    @Qualifier("noConnectionDataSource")
+    BasicDataSource noConnectionDataSource;
 
     List<Student> students = Arrays.asList(
             new Student(1, "foo", "bar", 2, LocalDate.of(2019, Month.AUGUST, 28), "foo@bar.com"),
             new Student(2, "Andrew", "Anderson", 3, LocalDate.of(2020, Month.AUGUST, 25), "andrew@and.com"),
             new Student(3, "Jonh", "Doe", 3, LocalDate.of(2020, Month.AUGUST, 23), "jonh@doe.com"));
 
-    @Sql("/InsertTestStudents.sql")
+    @Sql("/insertTestStudents.sql")
     @SqlMergeMode(MergeMode.MERGE)
     @Test
     void findAll_ShouldReturnAllGroups() {
@@ -48,7 +62,7 @@ class GroupDaoImplTest {
     }
 
     @Test
-    @Sql("/InsertTestStudents.sql")
+    @Sql("/insertTestStudents.sql")
     @SqlMergeMode(MergeMode.MERGE)
     void findById_ShouldReturnGroupWithSpecifiedID_WhenGroupId() {
         Group expected = new Group(1, "xx-zz", null, "math sciences");
@@ -56,7 +70,7 @@ class GroupDaoImplTest {
         assertEquals(expected, groupDaoImpl.findById(1));
     }
 
-    @Sql("/InsertTestStudents.sql")
+    @Sql("/insertTestStudents.sql")
     @SqlMergeMode(MergeMode.MERGE)
     @Test
     void getStudents_ShouldReturnStudentsLinkedWithGroup_WhenGroupId() {
@@ -68,5 +82,25 @@ class GroupDaoImplTest {
     void findById_ShouldReturnGroupWithSpecifiedIDWithoutStudents_WhenGroupId() {
         Group expected = new Group(1, "xx-zz", new ArrayList<Student>(), "math sciences");
         assertEquals(expected, groupDaoImpl.findById(1));
+    }
+        
+    @Test
+    void findById_ShouldThrowDaoException_WhenGroupNotFound() {
+        assertThrows(DaoException.class, () -> groupDaoImpl.findById(0));
+    }    
+    
+    @Test
+    void findAll_ShouldThrowDaoException_WhenNotCorrectConnection() {
+        GroupDao groupDaoImpl = new GroupDaoImpl(new NamedParameterJdbcTemplate(noConnectionDataSource),
+                new JdbcTemplate(noConnectionDataSource), new GeneratedKeyHolder(), new StudentMapper(),
+                new GroupResultSetExtractor(null));
+        assertThrows(DaoException.class, () -> groupDaoImpl.findAll());
+    }
+
+    @DirtiesContext
+    @Sql("/dropAllobjects.sql")
+    @Test
+    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
+        assertThrows(DaoException.class, () -> groupDaoImpl.findAll());
     }
 }

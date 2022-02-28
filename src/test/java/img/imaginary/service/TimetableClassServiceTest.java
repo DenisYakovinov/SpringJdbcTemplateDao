@@ -1,6 +1,7 @@
 package img.imaginary.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import img.imaginary.exception.DaoException;
+import img.imaginary.exception.ServiceException;
 import img.imaginary.config.TestServiceConfig;
 import img.imaginary.dao.TimetableClassDao;
 import img.imaginary.service.entity.Audience;
@@ -112,5 +115,11 @@ class TimetableClassServiceTest {
                 .thenReturn(timetableClasses);
         assertEquals(expected,
                 timetableServiceImpl.getTeacherTimetable(1, LocalDate.of(2022, 1, 24), LocalDate.of(2022, 1, 26)));
+    }
+    
+    @Test
+    void findById_ShouldThrowServiceException_WhenTimetableClassNotFound() {
+        Mockito.when(timetableClassDao.findById(0)).thenThrow(DaoException.class);
+        assertThrows(ServiceException.class, () -> timetableServiceImpl.findById(0));
     }
 }

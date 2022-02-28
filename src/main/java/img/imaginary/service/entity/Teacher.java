@@ -1,12 +1,16 @@
 package img.imaginary.service.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
@@ -25,4 +29,10 @@ public class Teacher {
     
     @NonNull
     private String email;
+
+    @Override
+    public String toString() {
+        return "Teacher [teacherId=" + teacherId + ", firstName=" + firstName + ", lastName=" + lastName
+                + ", academicDegree=" + academicDegree + "]";
+    } 
 }

@@ -1,6 +1,7 @@
 package img.imaginary.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import img.imaginary.exception.DaoException;
+import img.imaginary.exception.ServiceException;
 import img.imaginary.config.TestServiceConfig;
 import img.imaginary.dao.StudentDao;
 import img.imaginary.service.entity.Student;
@@ -46,5 +49,11 @@ class StudentServiceImplTest {
         Mockito.when(studentDao.findById(1)).thenReturn(expected);
         assertEquals(expected, studentServiceImpl.findById(1));
     }
+    
+    @Test
+    void findById_ShouldThrowServiceException_WhenStudentNotFound() {
+        Mockito.when(studentDao.findById(0)).thenThrow(DaoException.class);
+        assertThrows(ServiceException.class, () -> studentServiceImpl.findById(0));
+    } 
 }
 

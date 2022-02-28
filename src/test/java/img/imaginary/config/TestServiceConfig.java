@@ -4,7 +4,11 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.ComponentScan.Filter;
 
+import img.imaginary.aspect.BaseLoggingAspect;
 import img.imaginary.dao.AudienceDao;
 import img.imaginary.dao.AudienceDaoImpl;
 import img.imaginary.dao.GroupDao;
@@ -19,7 +23,9 @@ import img.imaginary.dao.TimetableClassDao;
 import img.imaginary.dao.TimetableClassDaoImpl;
 
 @Configuration
-@ComponentScan(basePackages = "img.imaginary.service")
+@EnableAspectJAutoProxy
+@ComponentScan(basePackages = { "img.imaginary.aspect", "img.imaginary.service" },
+excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = BaseLoggingAspect.class))
 public class TestServiceConfig {
    
     @Bean

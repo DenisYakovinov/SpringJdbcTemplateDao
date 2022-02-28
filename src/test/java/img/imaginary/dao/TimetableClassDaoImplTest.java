@@ -1,6 +1,7 @@
 package img.imaginary.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.DayOfWeek;
@@ -12,13 +13,21 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import img.imaginary.dao.mapper.TimetableResultSetExtractor;
+import img.imaginary.exception.DaoException;
 import img.imaginary.config.TestDaoConfig;
 import img.imaginary.service.entity.Audience;
 import img.imaginary.service.entity.Group;
@@ -35,6 +44,10 @@ class TimetableClassDaoImplTest {
 
     @Autowired
     TimetableClassDao timetableLineDaoImpl;
+    
+    @Autowired
+    @Qualifier("noConnectionDataSource")
+    BasicDataSource noConnectionDataSource;
          
     List<Student> students = Arrays.asList(
             new Student(1, "foo", "bar", 2, LocalDate.of(2019, Month.AUGUST, 28), "foo@bar.com"),
@@ -110,4 +123,37 @@ class TimetableClassDaoImplTest {
     void isGroupBusy_ShouldReturnTrueIfGroupIsBusy_WhenDayAndClassNumberAndGroupId() {
         assertTrue(timetableLineDaoImpl.isGroupBusy(DayOfWeek.WEDNESDAY, 1, 2));
     }
+    
+    @Test
+    void findById_ShouldThrowDaoException_WhenSubjectNotFound() {
+        assertThrows(DaoException.class, () -> timetableLineDaoImpl.findById(0));
+    }
+    
+    @Test
+    void getStudentTimetable_ShouldThrowDaoException_WhenGroupIdNotFoundOrTimetableNotExist() {
+        assertThrows(DaoException.class, () -> timetableLineDaoImpl.getStudentTimetable(0,
+                new HashSet<>(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))));
+    }
+    
+    @Test
+    void getTeacherTimetable_ShouldThrowDaoException_WhenGroupIdNotFoundTimetableNotExist() {
+        assertThrows(DaoException.class, () -> timetableLineDaoImpl.getTeacherTimetable( 0,
+                new HashSet<>(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))));
+    }
+    
+    @Test
+    void findAll_ShouldThrowDaoException_WhenNotCorrectConnection() {
+        TimetableClassDao timetableLineDaoImpl = new TimetableClassDaoImpl(
+                new NamedParameterJdbcTemplate(noConnectionDataSource), new JdbcTemplate(noConnectionDataSource),
+                new GeneratedKeyHolder(), new TimetableResultSetExtractor(null, null, null, null));
+        assertThrows(DaoException.class, () -> timetableLineDaoImpl.findAll());
+    }
+
+    @DirtiesContext
+    @Sql("/dropAllobjects.sql")
+    @Test
+    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
+        assertThrows(DaoException.class, () -> timetableLineDaoImpl.findAll());
+    }
 }
+
