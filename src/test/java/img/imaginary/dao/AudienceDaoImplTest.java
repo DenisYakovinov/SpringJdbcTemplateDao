@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -53,21 +52,9 @@ class AudienceDaoImplTest {
     }
     
     @Test
-    void findById_ShouldThrowDaoException_WhenAudienceNotFound() {
-        assertThrows(DaoException.class, () -> audienceDaoImpl.findById(0));
-    }
-    
-    @Test
     void findAll_ShouldThrowDaoException_WhenNotCorrectConnection() {
         AudienceDaoImpl audienceDaoImpl = new AudienceDaoImpl(new NamedParameterJdbcTemplate(noConnectionDataSource),
                 new JdbcTemplate(noConnectionDataSource), new GeneratedKeyHolder(), new AudienceMapper());
-        assertThrows(DaoException.class, () -> audienceDaoImpl.findAll());
-    }
-    
-    @DirtiesContext
-    @Sql("/dropAllobjects.sql")
-    @Test
-    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
         assertThrows(DaoException.class, () -> audienceDaoImpl.findAll());
     }
 }

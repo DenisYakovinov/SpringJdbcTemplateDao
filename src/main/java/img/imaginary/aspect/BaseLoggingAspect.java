@@ -57,9 +57,9 @@ public class BaseLoggingAspect {
         String methodName = joinPoint.getSignature().getName();
         String classname = joinPoint.getTarget().getClass().getName();
         if (result != null) {
-            log.info("{}::{} complited with {}", classname, methodName, result);
+            log.debug("{}::{} complited with {}", classname, methodName, result);
         } else {
-            log.info("{}::{} complited", classname, methodName);
+            log.debug("{}::{} complited", classname, methodName);
         }
     }
     

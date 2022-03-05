@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -51,21 +50,9 @@ class SubjectDaoImplTest {
     }
 
     @Test
-    void findById_ShouldThrowDaoException_WhenSubjectNotFound() {
-        assertThrows(DaoException.class, () -> subjectDaoImpl.findById(0));
-    }
-
-    @Test
     void findAll_ShouldThrowDaoException_WhenNotCorrectConnection() {
         SubjectDao subjectDaoImpl = new SubjectDaoImpl(new NamedParameterJdbcTemplate(noConnectionDataSource),
                 new JdbcTemplate(noConnectionDataSource), new GeneratedKeyHolder(), new SubjectMapper());
-        assertThrows(DaoException.class, () -> subjectDaoImpl.findAll());
-    }
-
-    @DirtiesContext
-    @Sql("/dropAllobjects.sql")
-    @Test
-    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
         assertThrows(DaoException.class, () -> subjectDaoImpl.findAll());
     }
 }

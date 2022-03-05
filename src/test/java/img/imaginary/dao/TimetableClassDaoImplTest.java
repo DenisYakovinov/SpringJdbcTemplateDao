@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -125,18 +124,13 @@ class TimetableClassDaoImplTest {
     }
     
     @Test
-    void findById_ShouldThrowDaoException_WhenSubjectNotFound() {
-        assertThrows(DaoException.class, () -> timetableLineDaoImpl.findById(0));
-    }
-    
-    @Test
-    void getStudentTimetable_ShouldThrowDaoException_WhenGroupIdNotFoundOrTimetableNotExist() {
+    void getStudentTimetable_ShouldThrowDaoException_WhenTimetableNotExist() {
         assertThrows(DaoException.class, () -> timetableLineDaoImpl.getStudentTimetable(0,
                 new HashSet<>(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))));
     }
     
     @Test
-    void getTeacherTimetable_ShouldThrowDaoException_WhenGroupIdNotFoundTimetableNotExist() {
+    void getTeacherTimetable_ShouldThrowDaoException_WhenTimetableNotExist() {
         assertThrows(DaoException.class, () -> timetableLineDaoImpl.getTeacherTimetable( 0,
                 new HashSet<>(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))));
     }
@@ -146,13 +140,6 @@ class TimetableClassDaoImplTest {
         TimetableClassDao timetableLineDaoImpl = new TimetableClassDaoImpl(
                 new NamedParameterJdbcTemplate(noConnectionDataSource), new JdbcTemplate(noConnectionDataSource),
                 new GeneratedKeyHolder(), new TimetableResultSetExtractor(null, null, null, null));
-        assertThrows(DaoException.class, () -> timetableLineDaoImpl.findAll());
-    }
-
-    @DirtiesContext
-    @Sql("/dropAllobjects.sql")
-    @Test
-    void findAll_ShouldThrowDaoException_WhenTablesNotExist() {
         assertThrows(DaoException.class, () -> timetableLineDaoImpl.findAll());
     }
 }
