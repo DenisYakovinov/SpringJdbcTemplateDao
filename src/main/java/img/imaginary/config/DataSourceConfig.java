@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("datasource.properties")
+@PropertySource("classpath:datasource.properties")
 public class DataSourceConfig {
     
     @Value ("${db.class}")

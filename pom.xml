@@ -3,6 +3,7 @@
 	<groupId>img.imaginary</groupId>
 	<artifactId>SpringJdbc-templateDao</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 
 	<properties>
 		<dbcp.version>1.4</dbcp.version>
@@ -53,7 +54,23 @@
 		</dependency>
 
 		<dependency>
-		<groupId>commons-dbcp</groupId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 			<version>${dbcp.version}</version>
 		</dependency>
@@ -113,7 +130,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -129,17 +146,17 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${surefire-plugin.version}</version>
 					<dependencies>
-					
+
 						<dependency>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-surefire-plugin</artifactId>
 							<version>${surefire-plugin.version}</version>
 
 						</dependency>
-						
+
 					</dependencies>
 				</plugin>
-				
+
 			</plugins>
 		</pluginManagement>
 	</build>
